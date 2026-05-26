@@ -1,0 +1,5 @@
+.env
+.env.local
+*.log
+wordpress_data/
+db_data/

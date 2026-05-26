@@ -1,0 +1,53 @@
+services:
+  wordpress:
+    image: wordpress:latest
+    container_name: step-by-step-wordpress
+    restart: unless-stopped
+    ports:
+      - "${WORDPRESS_PORT:-8080}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./theme/step-by-step:/var/www/html/wp-content/themes/step-by-step
+      - ./theme/step-by-step-playful:/var/www/html/wp-content/themes/step-by-step-playful
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:11
+    container_name: step-by-step-wordpress-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wpcli:
+    image: wordpress:cli
+    container_name: step-by-step-wpcli
+    profiles:
+      - tools
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./theme/step-by-step:/var/www/html/wp-content/themes/step-by-step
+      - ./theme/step-by-step-playful:/var/www/html/wp-content/themes/step-by-step-playful
+    depends_on:
+      - db
+      - wordpress
+    user: "33:33"
+
+volumes:
+  wordpress_data:
+  db_data:
